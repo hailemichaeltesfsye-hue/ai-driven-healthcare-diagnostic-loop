@@ -1,61 +1,98 @@
-# 🩺 AI-Driven Healthcare Diagnostic Loop
-### *Autonomous P2P Multi-Agent Healthcare Platform with Live Motion Graph UI*
+# AI-Driven Healthcare Diagnostic Loop
 
-An enterprise-grade Digital Multi-Agent Workforce applied to the healthcare domain. Built using Python 3.11+, Pydantic AI, LangGraph, ChromaDB, and Streamlit, this system models a production-level Clinical Command Center where decentralized sub-workers interact using pure Peer-to-Peer (P2P) asynchronous workflows.
+**Autonomous P2P Multi-Agent Healthcare Platform with a Live Motion Graph UI**
 
-## 🚀 Core Architectural Pillars
+An enterprise-grade digital multi-agent workforce applied to the healthcare domain. Built with **Python 3.11+**, **Pydantic AI**, **LangGraph**, **ChromaDB**, and **Streamlit**, the system models a production-level clinical command center where decentralized sub-workers coordinate using a pure **peer-to-peer (P2P)** asynchronous workflow — no central supervisor bottleneck.
 
-1. **Orchestration & State Management (25% Weight)**
-   - Utilizes a strictly-typed centralized `SharedState` driven by Pydantic schemas. 
-   - Implements a decentralized Peer-to-Peer network routing model, bypassing central supervisor bottlenecks to model modern real-world enterprise architectures.
+## Core Architectural Pillars
 
-2. **Self-Healing Capability & Tree of Thoughts (20% Weight)**
-   - Features an active programmatic **Self-Healing Loop** managed by an isolated Supervisor Node. If clinical assessment confidence falls below `7/10`, a dynamic recursive retry gate executes adjustment actions (capped at max 3 retries).
-   - Incorporates a **Tree of Thoughts (ToT) algorithm inside the Diagnostic Node to concurrently score 3 alternative medical paths before returning the highest-scoring branch.
+### 1. Orchestration & State Management
+- Strictly-typed, shareable state driven by Pydantic schemas (`src/graph/state.py`)
+- Decentralized peer-to-peer routing model (`src/graph/edges.py`, `src/graph/pipeline.py`) instead of a single central supervisor bottleneck
 
-3. **Tool Interoperability (MCP) & Strategic Memory (10% Weight)**
-   - Connects seamlessly with a custom **Model Context Protocol (MCP) Server** exposing multi-functional analytical tools (`fetch_medical_guidelines` and `validate_drug_interactions`).
-   - Integrated with an in-memory **ChromaDB Vector Store** to retrieve historical profiles and dynamically inject semantic context into runtime generation prompts.
+### 2. Self-Healing & Tree of Thoughts
+- An autonomous self-healing loop, overseen by an isolated Supervisor node, re-triggers the diagnostic branch (capped at 3 retries) if clinical assessment confidence falls below threshold
+- A Tree-of-Thoughts (ToT) approach in the Diagnostic agent scores multiple candidate medical paths concurrently before returning the highest-scoring branch
 
-4. **Governance, Safety & HITL Checkpoint (20% Weight)**
-   - Includes a dedicated Compliance Officer Agent that intercepts data streams to actively screen for policy infractions, legal liabilities, and Personally Identifiable Information (PII) leakage.
-   - Triggers an explicit execution halt via a **Human-in-the-Loop (HITL) validation gateway requiring direct physician action before output finalization.
+### 3. Tool Interoperability (MCP) & Strategic Memory
+- A custom Model Context Protocol server (`src/mcp_server/server.py`, `tools.py`) exposes analytical tools (e.g. fetching medical guidelines, validating drug interactions)
+- An in-memory ChromaDB vector store (`src/db/vector_store.py`) retrieves historical patient context and injects it into agent reasoning
 
-5. **Observability, Cost Control & Real-Time Motion UI (25% Weight)**
-   - Monitors live metrics tracking aggregate input/output token volume and computational financial cost overheads.
-   - Built with a modern healthcare dark-themed Streamlit UI featuring continuous visual step-trackers, pulsing connection glow vectors, and dynamic loading animations representing live data packets traveling across peers.
+### 4. Governance, Safety & HITL Checkpoint
+- A dedicated Compliance agent (`src/agents/compliance.py`) screens data streams for policy breaches, legal liabilities, and PII leakage
+- A Human-in-the-Loop (HITL) validation gateway halts execution, requiring direct physician sign-off before finalizing output
 
----
+### 5. Observability, Cost Control & Real-Time Motion UI
+- Live tracking of aggregate token volume and computational cost
+- A dark-themed Streamlit UI with live step-trackers and animated connection/data-flow visuals
 
-## 📂 Project Repository Layout
+## Agents (`src/agents/`)
 
-```text
+| Agent | Role |
+|---|---|
+| `triage.py` | Initial intake — classifies and routes incoming cases |
+| `researcher.py` | Gathers supporting medical/clinical information |
+| `diagnostic.py` | Runs Tree-of-Thoughts diagnostic reasoning |
+| `compliance.py` | Screens for policy, legal, and PII risks |
+| `supervisor.py` | Isolated node managing the self-healing retry loop |
+
+## Project Structure
+
+```
+ai-driven-healthcare-diagnostic-loop/
+├── scripts/                          # Utility/setup scripts
 ├── src/
-│   ├── agents/         # Decentralized worker nodes (Triage, Researcher, Diagnostic, Compliance)
-│   ├── db/             # ChromaDB vector store memory configurations
-│   ├── graph/          # LangGraph state configurations and P2P routing matrices
-│   └── mcp_server/     # Custom Model Context Protocol tool execution server
-├── app.py              # Premium production-ready Streamlit Command Center UI
-├── pyproject.toml      # Project configuration and uv tool dependencies metadata
-└── README.md           # Documentation Architecture Ledger
+│   ├── agents/
+│   │   ├── triage.py                  # Case intake and routing
+│   │   ├── researcher.py              # Clinical research support
+│   │   ├── diagnostic.py              # Tree-of-Thoughts diagnostic reasoning
+│   │   ├── compliance.py              # Policy/PII/legal screening
+│   │   └── supervisor.py              # Self-healing retry supervisor node
+│   ├── db/
+│   │   └── vector_store.py            # ChromaDB vector store integration
+│   ├── graph/
+│   │   ├── state.py                   # Pydantic-typed shared state
+│   │   ├── nodes.py                   # LangGraph node definitions
+│   │   ├── edges.py                   # P2P routing edges
+│   │   └── pipeline.py                # Graph assembly / pipeline entry point
+│   └── mcp_server/
+│       ├── server.py                  # MCP server implementation
+│       └── tools.py                   # Exposed MCP tools (guidelines, drug interactions)
+├── app.py                             # Streamlit dashboard entry point
+├── .env.example                       # Example environment variables
+├── pyproject.toml                     # Project metadata and dependencies (uv)
+└── uv.lock                            # Locked dependency versions
 ```
 
-## 🛠️ Quickstart Guide
+## Getting Started
 
 ### 1. Provision Environment Dependencies
-Ensure you have `uv` installed. Instantiate project packages seamlessly via:
+
+Ensure you have [uv](https://github.com/astral-sh/uv) installed, then install the project in editable mode:
+
 ```bash
 uv pip install -e .
 ```
 
 ### 2. Configure Credentials Securely
-Create a local `.env` file in the root directory and register your execution keys:
-```text
+
+Create a `.env` file in the project root and set your execution keys:
+
+```
 GROQ_API_KEY="your_production_groq_api_key_here"
 ```
 
 ### 3. Launch the Platform Engine
-Run the main Streamlit controller dashboard setup:
+
+Run the main Streamlit dashboard:
+
 ```bash
-uv run streamlit run app.py
+streamlit run app.py
 ```
+
+This starts the live motion graph UI, where cases flow through Triage → Researcher → Diagnostic → Compliance, with self-healing retries and HITL checkpoints visualized in real time.
+
+## Author
+
+**Hailemichael Tesfaye Mekuria**
+[LinkedIn](https://www.linkedin.com/in/hailemichael-tesfaye-2b7114401/) · [GitHub](https://github.com/hailemichaeltesfsye-hue)
